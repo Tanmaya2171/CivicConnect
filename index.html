@@ -70,6 +70,57 @@
       font-size: 14px;
     }
   </style>
+  <style>
+  /* Animation for stat boxes */
+  @keyframes statsFadeIn {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .animate-stats {
+    animation: statsFadeIn 0.6s ease-out forwards;
+  }
+  .animate-delay-100 { animation-delay: 0.3s; }
+  .animate-delay-200 { animation-delay: 0.4s; }
+  .animate-delay-300 { animation-delay: 0.5s; }
+  .animate-delay-400 { animation-delay: 0.6s; }
+  /* Enhance hover effect with bounce */
+  .transform.transition:hover {
+    transform: scale(1.05) translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+   /* Glow and Zoom animation for Report an Issue button */
+  @keyframes glowZoom {
+    0% {
+      transform: scale(1);
+      box-shadow: 0 0 10px 0 rgba(59, 130, 246, 0.7), 0 0 20px 0 rgba(147, 51, 234, 0.5);
+    }
+    50% {
+      transform: scale(1.15);
+      box-shadow: 0 0 20px 10px rgba(59, 130, 246, 0.4), 0 0 30px 15px rgba(147, 51, 234, 0.3);
+    }
+    100% {
+      transform: scale(1);
+      box-shadow: 0 0 10px 0 rgba(59, 130, 246, 0.7), 0 0 20px 0 rgba(147, 51, 234, 0.5);
+    }
+  }
+  .animate-glow-zoom {
+    animation: glowZoom 2s infinite ease-in-out;
+  }
+  /* Ensure hover effect works with animation */
+  .btn-primary:hover {
+    transform: scale(1.1) translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3), 0 0 15px rgba(59, 130, 246, 0.5);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+</style>
 </head>
 <body class="bg-gray-50 text-gray-900">
 
@@ -78,11 +129,12 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
       <h1 class="text-3xl font-bold text-blue-700 flex items-center">🏛️ CivicConnect</h1>
       <nav class="hidden md:flex space-x-6">
-        <a href="#report" class="text-blue-600 hover:text-blue-800 font-medium transition">Report Issue</a>
         <a href="#features" class="text-blue-600 hover:text-blue-800 font-medium transition">Features</a>
         <a href="#map" class="text-blue-600 hover:text-blue-800 font-medium transition">Live Map</a>
         <a href="#stats" class="text-blue-600 hover:text-blue-800 font-medium transition">Impact</a>
-      </nav>
+        <a href="login.html" class="bg-blue-600 text-white py-2 px-4 rounded-full hover:bg-blue-700 transition btn-primary">Login</a>
+        <a href="register.html" class="bg-blue-600 text-white py-2 px-4 rounded-full hover:bg-blue-700 transition btn-primary">Sign Up</a>
+        </nav>
       <button class="md:hidden text-blue-700">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -91,27 +143,39 @@
     </div>
   </header>
 
-  <!-- Hero -->
+    <!-- Hero Section --> 
   <section class="hero-bg text-white py-20">
-    <div class="max-w-7xl mx-auto px-4 text-center">
-      <h2 class="text-4xl md:text-5xl font-bold mb-6">Report Issues, Build Community</h2>
-      <p class="text-lg md:text-xl mb-8 max-w-2xl mx-auto">Join your neighbors in reporting and tracking local civic issues. Together, we can make our community better.</p>
-      <a href="#report" class="inline-block bg-white text-blue-700 font-semibold py-3 px-8 rounded-full btn-primary shadow-lg">Report an Issue</a>
-    </div>
-  </section>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+    <h2 class="text-4xl md:text-5xl font-bold mb-6 animate-fade-in">Report Issues, Build Community</h2>
+    <p class="text-lg md:text-xl mb-8 max-w-2xl mx-auto">Join your neighbors in reporting and tracking local civic issues. Together, we can make our community better.</p>
+    <a href="#report" class="inline-block bg-white text-blue-700 font-semibold py-3 px-8 rounded-full btn-primary shadow-lg animate-glow-zoom">Report an Issue</a>
+  </div>
+</section>
 
   <!-- Stats -->
   <section id="stats" class="bg-blue-600 text-white py-16 text-center">
-    <div class="max-w-7xl mx-auto px-4">
-      <h3 class="text-3xl font-bold mb-8">Community Impact</h3>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-        <div><div class="text-4xl font-bold">1,234</div><p>Reports Submitted</p></div>
-        <div><div class="text-4xl font-bold">987</div><p>Issues Resolved</p></div>
-        <div><div class="text-4xl font-bold">456</div><p>Active Users</p></div>
-        <div><div class="text-4xl font-bold">2.3 days</div><p>Avg Response Time</p></div>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <h3 class="text-3xl font-bold mb-12">Community Impact</h3>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <div class="bg-white text-blue-900 rounded-xl shadow-lg p-6 transform transition hover:scale-105 animate-stats animate-delay-100">
+        <div class="text-4xl font-bold mb-2">1,234</div>
+        <p class="text-sm font-medium">Reports Submitted</p>
+      </div>
+      <div class="bg-white text-blue-900 rounded-xl shadow-lg p-6 transform transition hover:scale-105 animate-stats animate-delay-200">
+        <div class="text-4xl font-bold mb-2">987</div>
+        <p class="text-sm font-medium">Issues Resolved</p>
+      </div>
+      <div class="bg-white text-blue-900 rounded-xl shadow-lg p-6 transform transition hover:scale-105 animate-stats animate-delay-300">
+        <div class="text-4xl font-bold mb-2">456</div>
+        <p class="text-sm font-medium">Active Users</p>
+      </div>
+      <div class="bg-white text-blue-900 rounded-xl shadow-lg p-6 transform transition hover:scale-105 animate-stats animate-delay-400">
+        <div class="text-4xl font-bold mb-2">2.3 days</div>
+        <p class="text-sm font-medium">Avg Response Time</p>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
   <!-- Report Form -->
   <section id="report" class="py-16 bg-white">
