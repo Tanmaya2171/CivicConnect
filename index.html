@@ -121,13 +121,7 @@
     transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
   
-  @keyframes typing {
-            from { width: 0; }
-            to { width: 100%; }
-        }
-        @keyframes blink-caret {
-            50% { border-color: transparent; }
-        }
+  
 
         /* navbar design for mobile*/
         .mobile-menu {
@@ -211,22 +205,7 @@
   <section class="hero-bg bg-[url('back.jpg')] bg-cover bg-center text-white py-20">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center rounded-lg">
     <div class="inline-block bg-black/3 backdrop-blur-md p-6 rounded-lg">
-     <h2 style="
-        font-size: 2.25rem; 
-        font-size: 3rem; 
-        @media (min-width: 768px) { font-size: 3rem; } 
-        font-weight: 700; 
-        margin-bottom: 1.5rem; 
-        color: #ffffff;
-        text-align: center;
-        line-height: 1.2;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        overflow: hidden; 
-        white-space: nowrap; 
-        border-right: 0.15em solid #d7d7d7; 
-        width: 0; 
-        animation: typing 3s steps(40, end) forwards, blink-caret 0.75s step-end infinite;
-    ">Report Issues, Build Community</h2>
+     <h2 class="text-4xl md:text-5xl font-extrabold mb-4 animate-fade-in-down">Report Issues, Build Community</h2>
       <p class="text-lg md:text-xl mb-8 max-w-2xl mx-auto">
         Join your neighbors in reporting and tracking local civic issues. Together, we can make our community better.
       </p>
