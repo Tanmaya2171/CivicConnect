@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - CivicConnect</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#3b82f6',
+            primaryDark: '#1e40af',
+            secondary: '#10b981',
+            dark: '#1e293b',
+            light: '#f8fafc'
+          },
+          fontFamily: {
+            poppins: ['Poppins', 'sans-serif'],
+            roboto: ['Roboto', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    
+    .container {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      max-width: 450px;
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s ease;
+      animation: fadeIn 0.8s ease-out;
+    }
+    
+    .container:hover {
+      transform: translateY(-5px);
+    }
+    
+    .logo {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    
+    .logo h1 {
+      font-family: 'Roboto', sans-serif;
+      font-weight: 700;
+      font-size: 2.5rem;
+      color: #1e3a8a;
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .logo p {
+      color: #64748b;
+      margin-top: 0.5rem;
+      font-size: 1rem;
+    }
+    
+    .form-group {
+      margin-bottom: 1.2rem;
+      position: relative;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: #374151;
+    }
+    
+    .form-group input {
+      width: 100%;
+      padding: 0.9rem 1rem;
+      border: 2px solid #e5e7eb;
+      border-radius: 10px;
+      outline: none;
+      transition: all 0.3s ease;
+      font-size: 1rem;
+    }
+    
+    .form-group input:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+    
+    .password-container {
+      position: relative;
+    }
+    
+    .toggle-password {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #64748b;
+      font-size: 1.2rem;
+    }
+    
+    .btn-submit {
+      width: 100%;
+      padding: 1rem;
+      background: linear-gradient(135deg, #3b82f6, #1e40af);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .btn-submit:hover {
+      background: linear-gradient(135deg, #2563eb, #1e3a8a);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
+    }
+    
+    .btn-google {
+      width: 100%;
+      padding: 0.9rem;
+      background: #ffffff;
+      color: #374151;
+      border: 2px solid #e5e7eb;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-top: 1rem;
+    }
+    
+    .btn-google:hover {
+      background: #f9fafb;
+      border-color: #3b82f6;
+      transform: translateY(-2px);
+    }
+    
+    .links {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 1.5rem;
+      font-size: 0.9rem;
+    }
+    
+    .links a {
+      color: #3b82f6;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+    
+    .links a:hover {
+      color: #1e40af;
+      text-decoration: underline;
+    }
+    
+    .error-message {
+      color: #ef4444;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+      display: none;
+    }
+    
+    .success-message {
+      color: #10b981;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+      display: none;
+    }
+    
+    .terms {
+      margin-top: 1.5rem;
+      font-size: 0.85rem;
+      color: #64748b;
+      text-align: center;
+    }
+    
+    .terms a {
+      color: #3b82f6;
+      text-decoration: none;
+    }
+    
+    .terms a:hover {
+      text-decoration: underline;
+    }
+    
+    .loading-spinner {
+      display: none;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s ease-in-out infinite;
+    }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .container {
+        padding: 1.5rem;
+      }
+      
+      .logo h1 {
+        font-size: 2rem;
+      }
+      
+      .links {
+        flex-direction: column;
+        gap: 0.8rem;
+        align-items: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <h1>🏛️ CivicConnect</h1>
+      <p>Join the community making cities better</p>
+    </div>
+    
+    <form id="register-form">
+      <div class="form-group">
+        <label for="username">Full Name</label>
+        <input type="text" id="username" name="username" required placeholder="Enter your full name">
+      </div>
+      
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" name="email" required placeholder="Enter your email">
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="password-container">
+          <input type="password" id="password" name="password" required placeholder="Create a strong password">
+          <button type="button" class="toggle-password" id="toggle-password">
+            <i class="far fa-eye"></i>
+          </button>
+        </div>
+        <div class="error-message" id="password-error">
+          Password must be at least 8 characters with a number and special character
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="phone">Phone Number (Optional)</label>
+        <input type="tel" id="phone" name="phone" placeholder="Enter your phone number">
+      </div>
+      
+      <button type="submit" class="btn-submit" id="register-submit">
+        <span>Create Account</span>
+        <div class="loading-spinner" id="loading-spinner"></div>
+      </button>
+      
+      <div class="success-message" id="success-message">
+        Registration successful! Redirecting to login...
+      </div>
+      
+      <div class="terms">
+        By registering, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+      </div>
+    </form>
+    
+    <div class="text-center my-4 text-gray-500">OR</div>
+    
+    <button type="button" class="btn-google">
+      <i class="fab fa-google"></i>
+      <span>Sign up with Google</span>
+    </button>
+    
+    <div class="links">
+      <a href="login.html">Already have an account? Login</a>
+      <a href="index.html">Back to Home</a>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.getElementById('register-form');
+      const passwordInput = document.getElementById('password');
+      const togglePasswordBtn = document.getElementById('toggle-password');
+      const passwordError = document.getElementById('password-error');
+      const submitBtn = document.getElementById('register-submit');
+      const loadingSpinner = document.getElementById('loading-spinner');
+      const successMessage = document.getElementById('success-message');
+      
+      // Toggle password visibility
+      togglePasswordBtn.addEventListener('click', function() {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        
+        // Change eye icon
+        const eyeIcon = togglePasswordBtn.querySelector('i');
+        if (type === 'text') {
+          eyeIcon.classList.remove('fa-eye');
+          eyeIcon.classList.add('fa-eye-slash');
+        } else {
+          eyeIcon.classList.remove('fa-eye-slash');
+          eyeIcon.classList.add('fa-eye');
+        }
+      });
+      
+      // Validate password on input
+      passwordInput.addEventListener('input', function() {
+        const password = passwordInput.value;
+        const hasMinLength = password.length >= 8;
+        const hasNumber = /\d/.test(password);
+        const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+        
+        if (password.length > 0 && (!hasMinLength || !hasNumber || !hasSpecialChar)) {
+          passwordError.style.display = 'block';
+        } else {
+          passwordError.style.display = 'none';
+        }
+      });
+      
+      // Form submission
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Basic validation
+        const username = document.getElementById('username').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        
+        if (!username || !email || !password) {
+          alert('Please fill in all required fields');
+          return;
+        }
+        
+        // Password validation
+        const hasMinLength = password.length >= 8;
+        const hasNumber = /\d/.test(password);
+        const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+        
+        if (!hasMinLength || !hasNumber || !hasSpecialChar) {
+          passwordError.style.display = 'block';
+          return;
+        }
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        loadingSpinner.style.display = 'block';
+        submitBtn.querySelector('span').textContent = 'Creating account...';
+        
+        // Simulate API call
+        setTimeout(function() {
+          // Hide loading state
+          loadingSpinner.style.display = 'none';
+          submitBtn.querySelector('span').textContent = 'Account created!';
+          submitBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+          
+          // Show success message
+          successMessage.style.display = 'block';
+          
+          // Redirect after a delay
+          setTimeout(function() {
+            window.location.href = 'login.html';
+          }, 2000);
+        }, 2000);
+      });
+      
+      // Google signup button
+      document.querySelector('.btn-google').addEventListener('click', function() {
+        alert('Google signup would be implemented here. This is a frontend demo.');
+      });
+    });
+  </script>
+</body>
+</html>
