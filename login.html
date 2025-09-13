@@ -350,6 +350,12 @@
       const loadingSpinner = document.getElementById('loading-spinner');
       const successMessage = document.getElementById('success-message');
       
+      // Check if user is already logged in (for demo purposes)
+      if (localStorage.getItem('isLoggedIn') === 'true') {
+        // Redirect to index.html if already logged in
+        window.location.href = 'index.html';
+      }
+      
       // Toggle password visibility
       togglePasswordBtn.addEventListener('click', function() {
         const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
@@ -389,6 +395,10 @@
         setTimeout(function() {
           // For demo purposes, accept any non-empty password
           if (password.length > 0) {
+            // Save login state to localStorage
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('userEmail', email);
+            
             // Hide loading state
             loadingSpinner.style.display = 'none';
             submitBtn.querySelector('span').textContent = 'Login successful!';
@@ -398,9 +408,9 @@
             successMessage.style.display = 'block';
             passwordError.style.display = 'none';
             
-            // Redirect after a delay
+            // Redirect to index.html after a delay
             setTimeout(function() {
-              window.location.href = 'dashboard.html';
+              window.location.href = 'index.html';
             }, 1500);
           } else {
             // Show error for empty password
@@ -415,7 +425,19 @@
       
       // Google login button
       document.querySelector('.btn-google').addEventListener('click', function() {
-        alert('Google login would be implemented here. This is a frontend demo.');
+        // For demo purposes, simulate Google login
+        localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('userEmail', 'google-user@example.com');
+        
+        // Show loading state
+        const originalText = this.querySelector('span').textContent;
+        this.querySelector('span').textContent = 'Redirecting...';
+        this.disabled = true;
+        
+        // Redirect to index.html after a delay
+        setTimeout(function() {
+          window.location.href = 'index.html';
+        }, 1500);
       });
       
       // Forgot password link
