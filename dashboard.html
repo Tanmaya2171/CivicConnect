@@ -5,15 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CivicConnect - User Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body {
       font-family: 'Poppins', sans-serif;
     }
     .hero-bg {
-      background-image: url('back.jpg');
-      background-size: cover;
-      background-position: center;
+      background: linear-gradient(135deg, #1E3A8A, #3B82F6, #60A5FA);
+      background-size: 200% 200%;
+      animation: gradientShift 15s ease infinite;
     }
     @keyframes gradientShift {
       0% { background-position: 0% 50%; }
@@ -26,6 +28,16 @@
     .btn-primary:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    .form-input:focus {
+      border-color: #3B82F6;
+      box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+    }
+    #map {
+      height: 400px;
+      border-radius: 1rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      z-index: 1;
     }
     @keyframes statsFadeIn {
       0% { opacity: 0; transform: translateY(20px); }
@@ -72,6 +84,30 @@
       from { transform: translateY(-10px); opacity: 0; }
       to { transform: translateY(0); opacity: 1; }
     }
+    .issue-marker {
+      filter: hue-rotate(0deg);
+      transition: filter 0.3s ease;
+    }
+    .issue-marker:hover {
+      filter: hue-rotate(220deg);
+    }
+    .custom-popup .leaflet-popup-content-wrapper {
+      border-radius: 8px;
+      padding: 1px;
+    }
+    .custom-popup .leaflet-popup-content {
+      margin: 12px;
+      font-size: 14px;
+    }
+    .fixed-notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 12px 20px;
+      border-radius: 8px;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
     @media (max-width: 767px) {
       .mobile-menu {
         display: none;
@@ -114,15 +150,79 @@
   </header>
 
   <!-- Hero Section -->
-  <section class="hero-bg bg-cover bg-center text-white py-20">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center rounded-lg">
-      <div class="inline-block bg-black/30 backdrop-blur-md p-6 rounded-lg">
-        <h2 class="text-4xl md:text-5xl font-extrabold mb-4 animate-stats">Report Issue, Build Community</h2>
-        <p class="text-lg md:text-xl mb-8 max-w-2xl mx-auto">
-          Track your reported issues, update your profile, and contribute to a better community.
-        </p>
-        <a href="#my-reports" class="inline-block bg-white text-blue-700 font-semibold py-3 px-8 rounded-full btn-primary shadow-lg">View My Reports</a>
+  <section class="hero-bg text-white py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <h2 class="text-4xl md:text-5xl font-bold mb-6">Report Issues, Build Community</h2>
+      <p class="text-xl mb-8 max-w-2xl mx-auto">
+        Track your reported issues, update your profile, and contribute to a better community.
+      </p>
+      <a href="#report" class="inline-block bg-white text-blue-700 font-semibold py-3 px-8 rounded-full btn-primary shadow-lg">Report New Issue</a>
+    </div>
+  </section>
+
+  <!-- Stats Section -->
+  <section class="bg-blue-600 text-white py-16 text-center">
+    <div class="max-w-7xl mx-auto px-4">
+      <h3 class="text-3xl font-bold mb-8">Your Impact</h3>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div class="animate-stats"><div class="text-4xl font-bold">12</div><p>Reports Submitted</p></div>
+        <div class="animate-stats animate-delay-100"><div class="text-4xl font-bold">8</div><p>Issues Resolved</p></div>
+        <div class="animate-stats animate-delay-200"><div class="text-4xl font-bold">4</div><p>In Progress</p></div>
+        <div class="animate-stats animate-delay-300"><div class="text-4xl font-bold">2.3 days</div><p>Avg Response Time</p></div>
       </div>
+    </div>
+  </section>
+
+  <!-- Report Form -->
+  <section id="report" class="py-16 bg-white">
+    <div class="max-w-lg mx-auto px-4">
+      <h3 class="text-3xl font-semibold text-gray-800 mb-8 text-center">Submit Your Report</h3>
+      <form id="issueForm" class="space-y-6 bg-gray-50 p-6 rounded-xl shadow-md">
+        <div>
+          <label for="title" class="block text-sm font-medium text-gray-700">Issue Title *</label>
+          <input type="text" id="title" class="form-input mt-1 block w-full p-3 border border-gray-300 rounded-lg" placeholder="e.g. Pothole on Main Street" required>
+        </div>
+        <div>
+          <label for="category" class="block text-sm font-medium text-gray-700">Issue Type *</label>
+          <select id="category" class="form-input mt-1 block w-full p-3 border border-gray-300 rounded-lg bg-white" required>
+            <option value="">Select an issue type</option>
+            <option>Pothole</option>
+            <option>Broken Streetlight</option>
+            <option>Overflowing Trash</option>
+            <option>Water Break</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div>
+          <label for="description" class="block text-sm font-medium text-gray-700">Description *</label>
+          <textarea id="description" rows="4" maxlength="200" class="form-input mt-1 block w-full p-3 border border-gray-300 rounded-lg" placeholder="Describe the issue in detail (max 200 characters)" required></textarea>
+          <p class="text-xs text-gray-500 mt-1"><span id="charCount">0</span>/200 characters</p>
+        </div>
+        <div>
+          <label for="photo" class="block text-sm font-medium text-gray-700">Upload Photo</label>
+          <input type="file" id="photo" accept="image/*" class="form-input mt-1 block w-full p-3 border border-gray-300 rounded-lg bg-white">
+          <div id="photo-preview" class="mt-4 hidden">
+            <img src="" alt="Preview" class="max-w-full h-auto rounded-lg shadow-sm max-h-40">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label for="latitude" class="block text-sm font-medium text-gray-700">Latitude</label>
+            <input type="text" id="latitude" readonly class="form-input mt-1 block w-full p-3 border border-gray-300 rounded-lg bg-gray-100">
+          </div>
+          <div>
+            <label for="longitude" class="block text-sm font-medium text-gray-700">Longitude</label>
+            <input type="text" id="longitude" readonly class="form-input mt-1 block w-full p-3 border border-gray-300 rounded-lg bg-gray-100">
+          </div>
+        </div>
+        <div class="flex space-x-4">
+          <button type="button" id="getLocationBtn" class="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg btn-primary">Get My Location</button>
+          <button type="button" id="resetLocationBtn" class="flex-1 bg-gray-500 text-white py-3 px-4 rounded-lg btn-primary">Reset Location</button>
+        </div>
+        <div>
+          <button type="submit" class="w-full bg-green-600 text-white py-3 px-4 rounded-lg btn-primary">Submit Report</button>
+        </div>
+      </form>
     </div>
   </section>
 
@@ -131,40 +231,23 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <h3 class="text-3xl font-semibold text-gray-800 mb-8 text-center">My Reported Issues</h3>
       <div id="reports-list" class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <!-- Sample Report Card (Dynamically populated) -->
-        <div class="bg-gray-50 p-6 rounded-xl shadow-md transform transition hover:scale-105 animate-stats animate-delay-100">
-          <h4 class="font-bold text-lg text-blue-700">Pothole on Main Street</h4>
-          <p class="text-sm text-gray-600 mt-2">Type: Pothole</p>
-          <p class="text-sm text-gray-600">Status: <span class="text-blue-600">In Progress</span></p>
-          <p class="text-sm text-gray-600">Reported: 2025-09-10</p>
-          <button class="mt-4 bg-blue-600 text-white py-2 px-4 rounded-lg btn-primary">View Details</button>
-        </div>
-        <!-- More report cards will be added here dynamically -->
+        <!-- Reports will be populated here dynamically -->
       </div>
     </div>
   </section>
 
-  <!-- Profile Section -->
-  <section id="profile" class="py-16 bg-gray-50">
-    <div class="max-w-lg mx-auto px-4">
-      <h3 class="text-3xl font-semibold text-gray-800 mb-8 text-center">User Profile</h3>
-      <form id="profileForm" class="space-y-6 bg-white p-6 rounded-xl shadow-md">
-        <div>
-          <label for="fullName" class="block text-sm font-medium text-gray-700">Full Name</label>
-          <input type="text" id="fullName" class="form-input mt-1 block w-full p-3 border border-gray-300 rounded-lg" placeholder="Enter your full name" value="User Name">
+  <!-- Map -->
+  <section id="map-section" class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4">
+      <h3 class="text-3xl font-semibold text-gray-800 mb-8 text-center">Live Issue Map</h3>
+      <div class="mb-4 flex justify-center">
+        <div class="flex space-x-2">
+          <span class="flex items-center"><div class="w-4 h-4 bg-red-500 rounded-full mr-1"></div> High Priority</span>
+          <span class="flex items-center"><div class="w-4 h-4 bg-yellow-500 rounded-full mr-1"></div> Medium Priority</span>
+          <span class="flex items-center"><div class="w-4 h-4 bg-green-500 rounded-full mr-1"></div> Low Priority</span>
         </div>
-        <div>
-          <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-          <input type="email" id="email" class="form-input mt-1 block w-full p-3 border border-gray-300 rounded-lg" placeholder="Enter your email" value="user@example.com">
-        </div>
-        <div>
-          <label for="phone" class="block text-sm font-medium text-gray-700">Phone (Optional)</label>
-          <input type="tel" id="phone" class="form-input mt-1 block w-full p-3 border border-gray-300 rounded-lg" placeholder="Enter your phone number">
-        </div>
-        <div>
-          <button type="submit" class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg btn-primary">Update Profile</button>
-        </div>
-      </form>
+      </div>
+      <div id="map"></div>
     </div>
   </section>
 
@@ -176,7 +259,12 @@
     <p class="mt-6 text-sm">&copy; 2025 CivicConnect. All rights reserved.</p>
   </footer>
 
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
+    // Initialize variables
+    let map, marker, userLocationObtained = false;
+
     // Initialize user data (mock for demo purposes)
     let user = {
       name: "User Name",
@@ -189,33 +277,329 @@
           type: "Pothole",
           status: "In Progress",
           date: "2025-09-10"
+        },
+        {
+          id: 2,
+          title: "Broken Streetlight",
+          type: "Broken Streetlight",
+          status: "Resolved",
+          date: "2025-09-05"
+        },
+        {
+          id: 3,
+          title: "Overflowing Trash Bin",
+          type: "Overflowing Trash",
+          status: "Reported",
+          date: "2025-09-15"
         }
       ]
     };
 
+    // Initialize Map
+    function initMap() {
+      map = L.map('map').setView([20.2961, 85.8245], 13); // Default: Bhubaneswar
+
+      // Add OpenStreetMap Layer
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19,
+      }).addTo(map);
+
+      // Add initial marker
+      marker = L.marker([20.2961, 85.8245], {
+        draggable: true,
+        icon: L.icon({
+          iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34]
+        })
+      }).addTo(map);
+
+      // Add sample issue markers
+      addSampleIssues();
+      
+      // Update form when marker is dragged
+      marker.on('dragend', function() {
+        const position = marker.getLatLng();
+        updateFormCoordinates(position.lat, position.lng);
+      });
+      
+      // Update marker when map is clicked
+      map.on('click', function(e) {
+        marker.setLatLng(e.latlng);
+        updateFormCoordinates(e.latlng.lat, e.latlng.lng);
+      });
+    }
+
+    // Add sample issues to the map
+    function addSampleIssues() {
+      const issues = [
+        { lat: 20.2961, lng: 85.8245, title: "Pothole on Main Road", type: "Pothole", priority: "high" },
+        { lat: 20.2920, lng: 85.8200, title: "Broken Streetlight", type: "Broken Streetlight", priority: "medium" },
+        { lat: 20.3000, lng: 85.8300, title: "Overflowing Trash Bin", type: "Overflowing Trash", priority: "high" },
+        { lat: 20.2900, lng: 85.8150, title: "Water Pipeline Leak", type: "Water Break", priority: "medium" },
+        { lat: 20.2950, lng: 85.8100, title: "Graffiti on Wall", type: "Graffiti", priority: "low" }
+      ];
+      
+      issues.forEach(issue => {
+        let markerColor;
+        if (issue.priority === "high") markerColor = "red";
+        else if (issue.priority === "medium") markerColor = "orange";
+        else markerColor = "green";
+        
+        const issueIcon = L.divIcon({
+          className: 'issue-marker',
+          html: `<div style="background-color: ${markerColor}; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.5);"></div>`,
+          iconSize: [24, 24],
+          iconAnchor: [12, 12]
+        });
+        
+        const issueMarker = L.marker([issue.lat, issue.lng], { icon: issueIcon }).addTo(map);
+        issueMarker.bindPopup(`
+          <div class="custom-popup">
+            <h4 class="font-bold">${issue.title}</h4>
+            <p>Type: ${issue.type}</p>
+            <p>Priority: <span style="color: ${markerColor}; font-weight: bold">${issue.priority}</span></p>
+            <p>Status: <span style="color: blue">Reported</span></p>
+          </div>
+        `);
+      });
+    }
+
+    // Update form coordinates
+    function updateFormCoordinates(lat, lng) {
+      document.getElementById('latitude').value = lat.toFixed(6);
+      document.getElementById('longitude').value = lng.toFixed(6);
+      userLocationObtained = true;
+    }
+
+    // Get user's location
+    function getLocation() {
+      if (navigator.geolocation) {
+        document.getElementById('getLocationBtn').textContent = "Locating...";
+        navigator.geolocation.getCurrentPosition(
+          function(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            
+            // Update map view
+            map.setView([lat, lng], 15);
+            
+            // Update marker position
+            marker.setLatLng([lat, lng]);
+            
+            // Update form fields
+            updateFormCoordinates(lat, lng);
+            
+            document.getElementById('getLocationBtn').textContent = "Get My Location";
+            
+            // Show success message
+            showNotification("Location obtained successfully!", "success");
+          },
+          function(error) {
+            document.getElementById('getLocationBtn').textContent = "Get My Location";
+            let errorMsg;
+            switch(error.code) {
+              case error.PERMISSION_DENIED:
+                errorMsg = "Location access denied. Please enable location permissions in your browser settings.";
+                break;
+              case error.POSITION_UNAVAILABLE:
+                errorMsg = "Location information is unavailable.";
+                break;
+              case error.TIMEOUT:
+                errorMsg = "The request to get your location timed out.";
+                break;
+              default:
+                errorMsg = "An unknown error occurred.";
+                break;
+            }
+            showNotification(errorMsg, "error");
+          },
+          { timeout: 10000 }
+        );
+      } else {
+        showNotification("Geolocation is not supported by this browser.", "error");
+      }
+    }
+
+    // Reset location
+    function resetLocation() {
+      marker.setLatLng([20.2961, 85.8245]);
+      map.setView([20.2961, 85.8245], 13);
+      document.getElementById('latitude').value = "";
+      document.getElementById('longitude').value = "";
+      userLocationObtained = false;
+    }
+
+    // Show notification
+    function showNotification(message, type) {
+      // Remove any existing notifications
+      const existingNotification = document.querySelector('.fixed-notification');
+      if (existingNotification) {
+        existingNotification.remove();
+      }
+      
+      const notification = document.createElement('div');
+      notification.className = `fixed-notification fixed top-4 right-4 px-4 py-3 rounded-lg shadow-lg z-50 ${
+        type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+      }`;
+      notification.textContent = message;
+      
+      document.body.appendChild(notification);
+      
+      // Auto remove after 5 seconds
+      setTimeout(() => {
+        notification.remove();
+      }, 5000);
+    }
+
+    // Character count for description
+    function setupCharacterCount() {
+      const description = document.getElementById('description');
+      const charCount = document.getElementById('charCount');
+      
+      description.addEventListener('input', () => {
+        charCount.textContent = description.value.length;
+      });
+    }
+
+    // Photo Preview
+    function setupPhotoPreview() {
+      const photoInput = document.getElementById('photo');
+      const photoPreview = document.getElementById('photo-preview');
+      
+      photoInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          // Check if file is an image
+          if (!file.type.match('image.*')) {
+            showNotification("Please select an image file.", "error");
+            photoInput.value = "";
+            return;
+          }
+          
+          // Check file size (max 5MB)
+          if (file.size > 5 * 1024 * 1024) {
+            showNotification("Image must be less than 5MB.", "error");
+            photoInput.value = "";
+            return;
+          }
+          
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            photoPreview.querySelector('img').src = e.target.result;
+            photoPreview.classList.remove('hidden');
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+
+    // Form submission
+    function setupFormSubmission() {
+      const form = document.getElementById('issueForm');
+      
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Basic validation
+        const title = document.getElementById('title').value;
+        const category = document.getElementById('category').value;
+        const description = document.getElementById('description').value;
+        const lat = document.getElementById('latitude').value;
+        const lng = document.getElementById('longitude').value;
+        
+        if (!title || !category || !description) {
+          showNotification("Please fill in all required fields.", "error");
+          return;
+        }
+        
+        if (!userLocationObtained) {
+          showNotification("Please obtain your location or set it on the map.", "error");
+          return;
+        }
+        
+        // In a real application, you would send this data to a server
+        // For this demo, we'll just show a success message
+        showNotification("Issue reported successfully! Thank you for your contribution.", "success");
+        
+        // Add to user's reports
+        const newReport = {
+          id: user.reports.length + 1,
+          title: title,
+          type: category,
+          status: "Reported",
+          date: new Date().toISOString().split('T')[0]
+        };
+        
+        user.reports.unshift(newReport);
+        displayReports();
+        
+        // Reset form
+        form.reset();
+        document.getElementById('photo-preview').classList.add('hidden');
+        document.getElementById('charCount').textContent = "0";
+        
+        // For demo purposes, add a new marker for the reported issue
+        const newIssue = {
+          lat: parseFloat(lat),
+          lng: parseFloat(lng),
+          title: title,
+          type: category,
+          priority: "medium" // Default priority
+        };
+        
+        addNewIssueMarker(newIssue);
+      });
+    }
+    
+    // Add a new issue marker to the map
+    function addNewIssueMarker(issue) {
+      const issueIcon = L.divIcon({
+        className: 'issue-marker',
+        html: '<div style="background-color: blue; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.5);"></div>',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+      });
+      
+      const issueMarker = L.marker([issue.lat, issue.lng], { icon: issueIcon }).addTo(map);
+      issueMarker.bindPopup(`
+        <div class="custom-popup">
+          <h4 class="font-bold">${issue.title}</h4>
+          <p>Type: ${issue.type}</p>
+          <p>Priority: <span style="color: blue; font-weight: bold">New</span></p>
+          <p>Status: <span style="color: blue">Just Reported</span></p>
+        </div>
+      `).openPopup();
+    }
+
     // Display user name
     function displayUserName() {
       document.getElementById('userName').textContent = user.name;
-      document.getElementById('fullName').value = user.name;
-      document.getElementById('email').value = user.email;
-      document.getElementById('phone').value = user.phone || "";
     }
 
     // Display user reports
     function displayReports() {
       const reportsList = document.getElementById('reports-list');
       reportsList.innerHTML = "";
+      
       user.reports.forEach((report, index) => {
-        const reportCard = `
-          <div class="bg-gray-50 p-6 rounded-xl shadow-md transform transition hover:scale-105 animate-stats animate-delay-${100 * (index + 1)}">
-            <h4 class="font-bold text-lg text-blue-700">${report.title}</h4>
-            <p class="text-sm text-gray-600 mt-2">Type: ${report.type}</p>
-            <p class="text-sm text-gray-600">Status: <span class="text-blue-600">${report.status}</span></p>
-            <p class="text-sm text-gray-600">Reported: ${report.date}</p>
-            <button class="mt-4 bg-blue-600 text-white py-2 px-4 rounded-lg btn-primary" onclick="viewReportDetails(${report.id})">View Details</button>
-          </div>
+        let statusColor = "blue";
+        if (report.status === "Resolved") statusColor = "green";
+        else if (report.status === "In Progress") statusColor = "orange";
+        
+        const reportCard = document.createElement('div');
+        reportCard.className = `bg-gray-50 p-6 rounded-xl shadow-md transform transition hover:scale-105 animate-stats animate-delay-${100 * (index % 3)}`;
+        reportCard.innerHTML = `
+          <h4 class="font-bold text-lg text-blue-700">${report.title}</h4>
+          <p class="text-sm text-gray-600 mt-2">Type: ${report.type}</p>
+          <p class="text-sm text-gray-600">Status: <span class="text-${statusColor}-600">${report.status}</span></p>
+          <p class="text-sm text-gray-600">Reported: ${report.date}</p>
+          <button class="mt-4 bg-blue-600 text-white py-2 px-4 rounded-lg btn-primary" onclick="viewReportDetails(${report.id})">View Details</button>
         `;
-        reportsList.innerHTML += reportCard;
+        
+        reportsList.appendChild(reportCard);
       });
     }
 
@@ -229,61 +613,52 @@
     function setupLogout() {
       const logoutBtn = document.getElementById('logoutBtn');
       const mobileLogoutBtn = document.getElementById('mobileLogoutBtn');
+      
       const logoutHandler = () => {
+        // Clear user data (in a real app, this would involve API calls)
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userData');
+        
         alert("Logged out successfully!");
         window.location.href = "login.html"; // Redirect to login page
       };
+      
       logoutBtn.addEventListener('click', logoutHandler);
       mobileLogoutBtn.addEventListener('click', logoutHandler);
-    }
-
-    // Handle profile form submission
-    function setupProfileForm() {
-      const profileForm = document.getElementById('profileForm');
-      profileForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        user.name = document.getElementById('fullName').value;
-        user.email = document.getElementById('email').value;
-        user.phone = document.getElementById('phone').value;
-        displayUserName();
-        showNotification("Profile updated successfully!", "success");
-      });
-    }
-
-    // Show notification
-    function showNotification(message, type) {
-      const existingNotification = document.querySelector('.fixed-notification');
-      if (existingNotification) {
-        existingNotification.remove();
-      }
-      const notification = document.createElement('div');
-      notification.className = `fixed-notification fixed top-4 right-4 px-4 py-3 rounded-lg shadow-lg z-50 ${
-        type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-      }`;
-      notification.textContent = message;
-      document.body.appendChild(notification);
-      setTimeout(() => {
-        notification.remove();
-      }, 5000);
     }
 
     // Mobile menu toggle
     function setupMobileMenu() {
       const menuToggle = document.getElementById('menu-toggle');
       const mobileMenu = document.getElementById('mobile-menu');
+      
       menuToggle.addEventListener('click', () => {
         mobileMenu.classList.toggle('active');
+      });
+      
+      // Close menu when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!menuToggle.contains(e.target) && !mobileMenu.contains(e.target)) {
+          mobileMenu.classList.remove('active');
+        }
       });
     }
 
     // Initialize everything when the page loads
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', function() {
+      initMap();
+      setupCharacterCount();
+      setupPhotoPreview();
+      setupFormSubmission();
       displayUserName();
       displayReports();
       setupLogout();
-      setupProfileForm();
       setupMobileMenu();
-
+      
+      // Set up button event listeners
+      document.getElementById('getLocationBtn').addEventListener('click', getLocation);
+      document.getElementById('resetLocationBtn').addEventListener('click', resetLocation);
+      
       // Smooth scrolling for navigation links
       document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function(e) {
