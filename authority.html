@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CivicConnect - Authority Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        primaryDark: '#1e3a8a',
+                        secondary: '#10b981',
+                        accent: '#f59e0b',
+                        dark: '#1e293b',
+                        light: '#f8fafc'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: #f1f5f9;
+            color: #334155;
+        }
+        
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            transition: all 0.3s ease;
+        }
+        
+        .main-content {
+            margin-left: 260px;
+            transition: all 0.3s ease;
+        }
+        
+        .header {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stats-card {
+            border-left: 4px solid;
+        }
+        
+        .nav-item {
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .nav-item:hover, .nav-item.active {
+            background: rgba(255, 255, 255, 0.1);
+            border-left: 3px solid white;
+        }
+        
+        .btn {
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary {
+            background: #1e40af;
+        }
+        
+        .btn-primary:hover {
+            background: #1e3a8a;
+        }
+        
+        .issue-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .priority-high {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+        
+        .priority-medium {
+            background: #fffbeb;
+            color: #d97706;
+        }
+        
+        .priority-low {
+            background: #f0fdf4;
+            color: #16a34a;
+        }
+        
+        .status-new {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        
+        .status-progress {
+            background: #fef3c7;
+            color: #d97706;
+        }
+        
+        .status-resolved {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        .hidden {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 80px;
+                transform: translateX(0);
+            }
+            
+            .sidebar.collapsed {
+                transform: translateX(-80px);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .main-content.expanded {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="flex">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="p-5">
+                <h1 class="text-2xl font-bold flex items-center">
+                    <i class="fas fa-city mr-3"></i>
+                    <span class="sidebar-text">CivicConnect</span>
+                </h1>
+                <p class="text-sm text-blue-100 mt-2 sidebar-text">Municipal Authority Portal</p>
+            </div>
+            
+            <nav class="mt-8">
+                <a href="#" class="nav-item active flex items-center py-3 px-6" data-section="dashboard">
+                    <i class="fas fa-chart-pie mr-3"></i>
+                    <span class="sidebar-text">Dashboard</span>
+                </a>
+                <a href="#" class="nav-item flex items-center py-3 px-6" data-section="issue-management">
+                    <i class="fas fa-list-alt mr-3"></i>
+                    <span class="sidebar-text">Issue Management</span>
+                </a>
+                <a href="#" class="nav-item flex items-center py-3 px-6" data-section="geographical-view">
+                    <i class="fas fa-map-marked-alt mr-3"></i>
+                    <span class="sidebar-text">Geographical View</span>
+                </a>
+                <a href="#" class="nav-item flex items-center py-3 px-6" data-section="analytics">
+                    <i class="fas fa-chart-line mr-3"></i>
+                    <span class="sidebar-text">Analytics</span>
+                </a>
+                <a href="#" class="nav-item flex items-center py-3 px-6" data-section="department-management">
+                    <i class="fas fa-users-cog mr-3"></i>
+                    <span class="sidebar-text">Department Management</span>
+                </a>
+                <a href="#" class="nav-item flex items-center py-3 px-6" data-section="settings">
+                    <i class="fas fa-cog mr-3"></i>
+                    <span class="sidebar-text">Settings</span>
+                </a>
+            </nav>
+            
+            <div class="absolute bottom-0 w-full p-5">
+                <div class="card p-4 bg-blue-700">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center">
+                            <i class="fas fa-user text-white"></i>
+                        </div>
+                        <div class="ml-3 sidebar-text">
+                            <h4 class="font-semibold">Admin User</h4>
+                            <p class="text-blue-100 text-sm">Municipal Authority</p>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary w-full mt-4 flex items-center justify-center">
+                        <i class="fas fa-sign-out-alt mr-2"></i>
+                        <span class="sidebar-text">Logout</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content w-full">
+            <!-- Header -->
+            <header class="header flex items-center justify-between p-4">
+                <div class="flex items-center">
+                    <button id="sidebar-toggle" class="p-2 mr-4 text-gray-500 rounded-md hover:bg-gray-100">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h2 class="text-xl font-semibold" id="header-title">Authority Dashboard</h2>
+                </div>
+                
+                <div class="flex items-center">
+                    <div class="relative mr-4">
+                        <i class="fas fa-bell text-gray-500"></i>
+                        <span class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs">3</span>
+                    </div>
+                    <div class="relative">
+                        <i class="fas fa-envelope text-gray-500"></i>
+                        <span class="absolute -top-1 -right-1 bg-blue-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs">7</span>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Dashboard Content -->
+            <div id="dashboard-section" class="p-5">
+                <!-- Stats Overview -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+                    <div class="stats-card card p-5 border-l-blue-500">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-2xl font-bold">248</h3>
+                                <p class="text-gray-500">Total Reports</p>
+                            </div>
+                            <div class="bg-blue-100 p-3 rounded-full">
+                                <i class="fas fa-flag text-blue-500"></i>
+                            </div>
+                        </div>
+                        <p class="text-sm text-green-500 mt-2"><i class="fas fa-arrow-up"></i> 12% from last week</p>
+                    </div>
+                    
+                    <div class="stats-card card p-5 border-l-green-500">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-2xl font-bold">184</h3>
+                                <p class="text-gray-500">Resolved Issues</p>
+                            </div>
+                            <div class="bg-green-100 p-3 rounded-full">
+                                <i class="fas fa-check-circle text-green-500"></i>
+                            </div>
+                        </div>
+                        <p class="text-sm text-green-500 mt-2"><i class="fas fa-arrow-up"></i> 8% from last week</p>
+                    </div>
+                    
+                    <div class="stats-card card p-5 border-l-yellow-500">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-2xl font-bold">42</h3>
+                                <p class="text-gray-500">In Progress</p>
+                            </div>
+                            <div class="bg-yellow-100 p-3 rounded-full">
+                                <i class="fas fa-tasks text-yellow-500"></i>
+                            </div>
+                        </div>
+                        <p class="text-sm text-red-500 mt-2"><i class="fas fa-arrow-down"></i> 3% from last week</p>
+                    </div>
+                    
+                    <div class="stats-card card p-5 border-l-red-500">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-2xl font-bold">22</h3>
+                                <p class="text-gray-500">Pending Issues</p>
+                            </div>
+                            <div class="bg-red-100 p-3 rounded-full">
+                                <i class="fas fa-exclamation-triangle text-red-500"></i>
+                            </div>
+                        </div>
+                        <p class="text-sm text-red-500 mt-2"><i class="fas fa-arrow-up"></i> 5% from last week</p>
+                    </div>
+                </div>
+                
+                <!-- Charts Row -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-8">
+                    <div class="card p-5">
+                        <h3 class="font-semibold text-lg mb-5">Reports by Category</h3>
+                        <div class="chart-container">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="card p-5">
+                        <h3 class="font-semibold text-lg mb-5">Resolution Timeline Trends</h3>
+                        <div class="chart-container">
+                            <canvas id="timelineChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Issues & Department Stats -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-8">
+                    <div class="card p-5 lg:col-span-2">
+                        <div class="flex justify-between items-center mb-5">
+                            <h3 class="font-semibold text-lg">Recent Issues</h3>
+                            <button class="text-sm text-blue-500">View All</button>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="text-left text-gray-500 text-sm">
+                                        <th class="pb-3">Issue</th>
+                                        <th class="pb-3">Category</th>
+                                        <th class="pb-3">Priority</th>
+                                        <th class="pb-3">Status</th>
+                                        <th class="pb-3">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-t border-gray-100">
+                                        <td class="py-3">Pothole on Main St</td>
+                                        <td class="py-3">Road Damage</td>
+                                        <td class="py-3"><span class="issue-badge priority-high">High</span></td>
+                                        <td class="py-3"><span class="issue-badge status-new">New</span></td>
+                                        <td class="py-3">
+                                            <button class="text-blue-500 mr-2"><i class="fas fa-eye"></i></button>
+                                            <button class="text-green-500"><i class="fas fa-edit"></i></button>
+                                        </td>
+                                    </tr>
+                                    <tr class="border-t border-gray-100">
+                                        <td class="py-3">Broken Streetlight</td>
+                                        <td class="py-3">Electrical</td>
+                                        <td class="py-3"><span class="issue-badge priority-medium">Medium</span></td>
+                                        <td class="py-3"><span class="issue-badge status-progress">In Progress</span></td>
+                                        <td class="py-3">
+                                            <button class="text-blue-500 mr-2"><i class="fas fa-eye"></i></button>
+                                            <button class="text-green-500"><i class="fas fa-edit"></i></button>
+                                        </td>
+                                    </tr>
+                                    <tr class="border-t border-gray-100">
+                                        <td class="py-3">Garbage Overflow</td>
+                                        <td class="py-3">Sanitation</td>
+                                        <td class="py-3"><span class="issue-badge priority-high">High</span></td>
+                                        <td class="py-3"><span class="issue-badge status-new">New</span></td>
+                                        <td class="py-3">
+                                            <button class="text-blue-500 mr-2"><i class="fas fa-eye"></i></button>
+                                            <button class="text-green-500"><i class="fas fa-edit"></i></button>
+                                        </td>
+                                    </tr>
+                                    <tr class="border-t border-gray-100">
+                                        <td class="py-3">Water Pipe Leak</td>
+                                        <td class="py-3">Water Supply</td>
+                                        <td class="py-3"><span class="issue-badge priority-high">High</span></td>
+                                        <td class="py-3"><span class="issue-badge status-progress">In Progress</span></td>
+                                        <td class="py-3">
+                                            <button class="text-blue-500 mr-2"><i class="fas fa-eye"></i></button>
+                                            <button class="text-green-500"><i class="fas fa-edit"></i></button>
+                                        </td>
+                                    </tr>
+                                    <tr class="border-t border-gray-100">
+                                        <td class="py-3">Park Maintenance</td>
+                                        <td class="py-3">Public Spaces</td>
+                                        <td class="py-3"><span class="issue-badge priority-low">Low</span></td>
+                                        <td class="py-3"><span class="issue-badge status-resolved">Resolved</span></td>
+                                        <td class="py-3">
+                                            <button class="text-blue-500 mr-2"><i class="fas fa-eye"></i></button>
+                                            <button class="text-green-500"><i class="fas fa-edit"></i></button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="card p-5">
+                        <h3 class="font-semibold text-lg mb-5">Department Performance</h3>
+                        
+                        <div class="mb-6">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm">Sanitation Department</span>
+                                <span class="text-sm font-semibold">92%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-green-500 h-2 rounded-full" style="width: 92%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm">Public Works</span>
+                                <span class="text-sm font-semibold">85%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-green-500 h-2 rounded-full" style="width: 85%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm">Electrical Division</span>
+                                <span class="text-sm font-semibold">78%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-green-500 h-2 rounded-full" style="width: 78%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Department Management Section -->
+            <div id="department-management-section" class="p-5 hidden">
+                <div class="card p-5">
+                    <h3 class="font-semibold text-lg mb-5">Forward Issues to Authorities</h3>
+                    <form id="forward-issue-form">
+                        <div class="mb-4">
+                            <label for="issue-select" class="block text-sm font-medium text-gray-700">Select Issue</label>
+                            <select id="issue-select" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50">
+                                <option value="">Select an issue</option>
+                                <option value="1">Pothole on Main St</option>
+                                <option value="2">Broken Streetlight</option>
+                                <option value="3">Garbage Overflow</option>
+                                <option value="4">Water Pipe Leak</option>
+                                <option value="5">Park Maintenance</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label for="authority-select" class="block text-sm font-medium text-gray-700">Select Authorities</label>
+                            <select id="authority-select" multiple class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50">
+                                <option value="sanitation">Sanitation Department</option>
+                                <option value="public-works">Public Works</option>
+                                <option value="electrical">Electrical Division</option>
+                                <option value="water-supply">Water Supply Department</option>
+                                <option value="public-spaces">Public Spaces Department</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label for="notes" class="block text-sm font-medium text-gray-700">Additional Notes</label>
+                            <textarea id="notes" rows="4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50" placeholder="Add any additional notes here..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-full flex items-center justify-center">
+                            <i class="fas fa-paper-plane mr-2"></i>
+                            Forward Issue
+                        </button>
+                    </form>
+                    <div id="forward-success" class="hidden mt-4 p-4 bg-green-100 text-green-700 rounded-md">
+                        Issue forwarded successfully!
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sidebar toggle for mobile
+        const sidebar = document.querySelector('.sidebar');
+        const mainContent = document.querySelector('.main-content');
+        const sidebarToggle = document.querySelector('#sidebar-toggle');
+
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        });
+
+        // Navigation handling
+        const navItems = document.querySelectorAll('.nav-item');
+        const sections = {
+            'dashboard': document.querySelector('#dashboard-section'),
+            'department-management': document.querySelector('#department-management-section')
+        };
+        const headerTitle = document.querySelector('#header-title');
+
+        navItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                navItems.forEach(nav => nav.classList.remove('active'));
+                item.classList.add('active');
+
+                const section = item.getAttribute('data-section');
+                Object.values(sections).forEach(sec => sec.classList.add('hidden'));
+                if (sections[section]) {
+                    sections[section].classList.remove('hidden');
+                    headerTitle.textContent = item.querySelector('.sidebar-text').textContent;
+                }
+            });
+        });
+
+        // Form submission for forwarding issues
+        const forwardForm = document.querySelector('#forward-issue-form');
+        const successMessage = document.querySelector('#forward-success');
+
+        forwardForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const issue = document.querySelector('#issue-select').value;
+            const authorities = Array.from(document.querySelector('#authority-select').selectedOptions).map(opt => opt.value);
+            const notes = document.querySelector('#notes').value;
+
+            if (issue && authorities.length > 0) {
+                // Simulate forwarding (replace with actual API call in production)
+                console.log(`Forwarding issue ${issue} to authorities: ${authorities.join(', ')} with notes: ${notes}`);
+                successMessage.classList.remove('hidden');
+                forwardForm.reset();
+                setTimeout(() => successMessage.classList.add('hidden'), 3000);
+            } else {
+                alert('Please select an issue and at least one authority.');
+            }
+        });
+
+        // Chart.js setup (unchanged)
+        const categoryChart = new Chart(document.getElementById('categoryChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Road Damage', 'Electrical', 'Sanitation', 'Water Supply', 'Public Spaces'],
+                datasets: [{
+                    label: 'Reports by Category',
+                    data: [65, 45, 80, 30, 28],
+                    backgroundColor: ['#1e40af', '#10b981', '#f59e0b', '#dc2626', '#6b7280'],
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        const timelineChart = new Chart(document.getElementById('timelineChart'), {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Resolution Time (Days)',
+                    data: [5, 4, 3, 3.5, 2.8, 2.5],
+                    borderColor: '#1e40af',
+                    backgroundColor: 'rgba(30, 64, 175, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

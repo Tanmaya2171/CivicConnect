@@ -165,6 +165,12 @@
                 display: none;
             }
         }
+        .mobile-menu {
+            display: none;
+        }
+        .mobile-menu.active {
+            display: block;
+        }
 </style>
 </head>
 <body class="bg-gray-50 text-gray-900">
@@ -176,11 +182,19 @@
   <header class="bg-white shadow-lg sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
             <h1 class="text-3xl font-bold text-blue-700 flex items-center">🏛️ CivicConnect</h1>
-            <nav class="hidden md:flex space-x-6">
+            <nav class="hidden md:flex space-x-6 items-center">
                 <a href="#features" class="text-blue-600 hover:text-blue-800 font-medium transition">Features</a>
                 <a href="#map" class="text-blue-600 hover:text-blue-800 font-medium transition">Live Map</a>
                 <a href="#stats" class="text-blue-600 hover:text-blue-800 font-medium transition">Impact</a>
-                <a href="login.html" class="bg-blue-600 text-white py-2 px-4 rounded-full hover:bg-blue-700 transition btn-primary">Login</a>
+                <div class="relative">
+                    <!-- Login Button (Desktop) -->
+                    <button id="loginButton" class="bg-blue-600 text-white py-2 px-4 rounded-full hover:bg-blue-700 transition btn-primary">Login</button>
+                    <!-- Dropdown Menu for Login (Initially Hidden) -->
+                    <div id="loginDropdown" class="hidden absolute mt-2 w-48 bg-white rounded-md shadow-lg z-10">
+                        <a href="dashboard.html" class="block px-4 py-2 text-gray-800 hover:bg-blue-100">User Login</a>
+                        <a href="authority.html" class="block px-4 py-2 text-gray-800 hover:bg-blue-100">Authority Login</a>
+                    </div>
+                </div>
                 <a href="register.html" class="bg-blue-600 text-white py-2 px-4 rounded-full hover:bg-blue-700 transition btn-primary">Register</a>
             </nav>
             <div class="md:hidden">
@@ -189,12 +203,20 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
                 </button>
-                <div id="mobile-menu" class="mobile-menu">
-                    <a href="#features">Features</a>
-                    <a href="#map">Live Map</a>
-                    <a href="#stats">Impact</a>
-                    <a href="login.html" class="bg-blue-600 text-white py-2 px-4 rounded-full hover:bg-blue-700 transition block text-center mt-2">Login</a>
-                    <a href="register.html" class="bg-blue-600 text-white py-2 px-4 rounded-full hover:bg-blue-700 transition block text-center mt-2">Register</a>
+                <div id="mobile-menu" class="mobile-menu absolute top-16 left-0 w-full bg-white shadow-lg">
+                    <a href="#features" class="block px-4 py-2 text-blue-600 hover:bg-blue-100">Features</a>
+                    <a href="#map" class="block px-4 py-2 text-blue-600 hover:bg-blue-100">Live Map</a>
+                    <a href="#stats" class="block px-4 py-2 text-blue-600 hover:bg-blue-100">Impact</a>
+                    <div class="relative">
+                        <!-- Login Button (Mobile) -->
+                        <button id="mobileLoginButton" class="bg-blue-600 text-white py-2 px-4 rounded-full hover:bg-blue-700 transition block text-center mt-2 mx-4">Login</button>
+                        <!-- Dropdown Menu for Login (Mobile, Initially Hidden) -->
+                        <div id="mobileLoginDropdown" class="hidden mt-2 w-full bg-white rounded-md shadow-lg z-10">
+                            <a href="login.html" class="block px-4 py-2 text-gray-800 hover:bg-blue-100">User Login</a>
+                            <a href="authority.html" class="block px-4 py-2 text-gray-800 hover:bg-blue-100">Authority Login</a>
+                        </div>
+                    </div>
+                    <a href="register.html" class="bg-blue-600 text-white py-2 px-4 rounded-full hover:bg-blue-700 transition block text-center mt-2 mx-4">Register</a>
                 </div>
             </div>
         </div>
@@ -639,7 +661,20 @@
         menuToggle.addEventListener('click', () => {
             mobileMenu.classList.toggle('active');
         });
-    
+    // JavaScript to toggle the dropdown visibility
+        const loginButton = document.getElementById('loginButton');
+        const loginDropdown = document.getElementById('loginDropdown');
+
+        loginButton.addEventListener('click', () => {
+            loginDropdown.classList.toggle('hidden');
+        });
+
+        // Close dropdown if clicked outside
+        document.addEventListener('click', (event) => {
+            if (!loginButton.contains(event.target) && !loginDropdown.contains(event.target)) {
+                loginDropdown.classList.add('hidden');
+            }
+        });
   </script>
 </body>
 </html>
