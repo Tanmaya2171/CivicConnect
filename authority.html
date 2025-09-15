@@ -35,6 +35,7 @@
         body {
             background-color: #f1f5f9;
             color: #334155;
+            min-height: 100vh;
         }
         
         .sidebar {
@@ -44,16 +45,22 @@
             height: 100vh;
             position: fixed;
             transition: all 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
         }
         
         .main-content {
             margin-left: 260px;
             transition: all 0.3s ease;
+            min-height: 100vh;
         }
         
         .header {
             background: white;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
         
         .card {
@@ -84,14 +91,42 @@
         
         .btn {
             transition: all 0.2s ease;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            line-height: 1.25rem;
+            border-radius: 8px;
+            min-width: 120px;
+            min-height: 44px; /* Touch-friendly size */
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            cursor: pointer;
         }
         
         .btn-primary {
             background: #1e40af;
+            color: white;
         }
         
-        .btn-primary:hover {
+        .btn-primary:hover, .btn-primary:focus {
             background: #1e3a8a;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.3);
+        }
+        
+        .btn-icon {
+            padding: 0.5rem;
+            min-width: 40px;
+            min-height: 40px;
+            border-radius: 50%;
+            background: transparent;
+        }
+        
+        .btn-icon:hover, .btn-icon:focus {
+            background: rgba(0, 0, 0, 0.1);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.2);
         }
         
         .issue-badge {
@@ -140,30 +175,126 @@
             display: none;
         }
         
-        @media (max-width: 768px) {
+        .mobile-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        
+        /* Mobile optimizations */
+        @media (max-width: 1024px) {
             .sidebar {
-                width: 80px;
-                transform: translateX(0);
+                transform: translateX(-100%);
+                width: 280px;
             }
             
-            .sidebar.collapsed {
-                transform: translateX(-80px);
+            .sidebar.mobile-open {
+                transform: translateX(0);
             }
             
             .main-content {
                 margin-left: 0;
             }
             
-            .main-content.expanded {
-                margin-left: 0;
+            .mobile-overlay.active {
+                display: block;
             }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+            
+            .charts-grid {
+                grid-template-columns: 1fr !important;
+            }
+            
+            .issues-grid {
+                grid-template-columns: 1fr !important;
+            }
+        }
+        
+        @media (max-width: 640px) {
+            .stats-grid {
+                grid-template-columns: 1fr !important;
+            }
+            
+            .header-title {
+                font-size: 1.1rem;
+            }
+            
+            .header-actions {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .card {
+                padding: 1rem !important;
+            }
+            
+            .table-responsive {
+                overflow-x: auto;
+            }
+            
+            table {
+                min-width: 600px;
+            }
+            
+            .btn {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.75rem;
+                min-width: 100px;
+                min-height: 40px;
+            }
+            
+            .btn-icon {
+                padding: 0.4rem;
+                min-width: 36px;
+                min-height: 36px;
+            }
+            
+            .btn-primary {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.75rem;
+            }
+        }
+        
+        /* Scrollbar styling */
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+        
+        /* Animation for section transitions */
+        .section-transition {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
     <div class="flex">
+        <!-- Mobile overlay -->
+        <div class="mobile-overlay" id="mobile-overlay"></div>
+        
         <!-- Sidebar -->
-        <div class="sidebar">
+        <div class="sidebar" id="sidebar">
             <div class="p-5">
                 <h1 class="text-2xl font-bold flex items-center">
                     <i class="fas fa-city mr-3"></i>
@@ -210,7 +341,7 @@
                             <p class="text-blue-100 text-sm">Municipal Authority</p>
                         </div>
                     </div>
-                    <button class="btn btn-primary w-full mt-4 flex items-center justify-center">
+                    <button class="btn btn-primary w-full mt-4 flex items-center justify-center"onclick="window.location.href='index.html'">
                         <i class="fas fa-sign-out-alt mr-2"></i>
                         <span class="sidebar-text">Logout</span>
                     </button>
@@ -223,13 +354,13 @@
             <!-- Header -->
             <header class="header flex items-center justify-between p-4">
                 <div class="flex items-center">
-                    <button id="sidebar-toggle" class="p-2 mr-4 text-gray-500 rounded-md hover:bg-gray-100">
+                    <button id="sidebar-toggle" class="btn btn-icon mr-4 text-gray-500 lg:hidden">
                         <i class="fas fa-bars"></i>
                     </button>
-                    <h2 class="text-xl font-semibold" id="header-title">Authority Dashboard</h2>
+                    <h2 class="text-xl font-semibold header-title" id="header-title">Authority Dashboard</h2>
                 </div>
                 
-                <div class="flex items-center">
+                <div class="flex items-center header-actions">
                     <div class="relative mr-4">
                         <i class="fas fa-bell text-gray-500"></i>
                         <span class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs">3</span>
@@ -242,9 +373,9 @@
             </header>
             
             <!-- Dashboard Content -->
-            <div id="dashboard-section" class="p-5">
+            <div id="dashboard-section" class="p-5 section-transition">
                 <!-- Stats Overview -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8 stats-grid">
                     <div class="stats-card card p-5 border-l-blue-500">
                         <div class="flex justify-between items-start">
                             <div>
@@ -299,7 +430,7 @@
                 </div>
                 
                 <!-- Charts Row -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-8 charts-grid">
                     <div class="card p-5">
                         <h3 class="font-semibold text-lg mb-5">Reports by Category</h3>
                         <div class="chart-container">
@@ -316,14 +447,14 @@
                 </div>
                 
                 <!-- Recent Issues & Department Stats -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-8">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-8 issues-grid">
                     <div class="card p-5 lg:col-span-2">
                         <div class="flex justify-between items-center mb-5">
                             <h3 class="font-semibold text-lg">Recent Issues</h3>
-                            <button class="text-sm text-blue-500">View All</button>
+                            <button class="btn btn-primary text-sm">View All</button>
                         </div>
                         
-                        <div class="overflow-x-auto">
+                        <div class="overflow-x-auto table-responsive">
                             <table class="w-full">
                                 <thead>
                                     <tr class="text-left text-gray-500 text-sm">
@@ -340,9 +471,9 @@
                                         <td class="py-3">Road Damage</td>
                                         <td class="py-3"><span class="issue-badge priority-high">High</span></td>
                                         <td class="py-3"><span class="issue-badge status-new">New</span></td>
-                                        <td class="py-3">
-                                            <button class="text-blue-500 mr-2"><i class="fas fa-eye"></i></button>
-                                            <button class="text-green-500"><i class="fas fa-edit"></i></button>
+                                        <td class="py-3 flex space-x-2">
+                                            <button class="btn btn-icon text-blue-500"><i class="fas fa-eye"></i></button>
+                                            <button class="btn btn-icon text-green-500"><i class="fas fa-edit"></i></button>
                                         </td>
                                     </tr>
                                     <tr class="border-t border-gray-100">
@@ -350,9 +481,9 @@
                                         <td class="py-3">Electrical</td>
                                         <td class="py-3"><span class="issue-badge priority-medium">Medium</span></td>
                                         <td class="py-3"><span class="issue-badge status-progress">In Progress</span></td>
-                                        <td class="py-3">
-                                            <button class="text-blue-500 mr-2"><i class="fas fa-eye"></i></button>
-                                            <button class="text-green-500"><i class="fas fa-edit"></i></button>
+                                        <td class="py-3 flex space-x-2">
+                                            <button class="btn btn-icon text-blue-500"><i class="fas fa-eye"></i></button>
+                                            <button class="btn btn-icon text-green-500"><i class="fas fa-edit"></i></button>
                                         </td>
                                     </tr>
                                     <tr class="border-t border-gray-100">
@@ -360,9 +491,9 @@
                                         <td class="py-3">Sanitation</td>
                                         <td class="py-3"><span class="issue-badge priority-high">High</span></td>
                                         <td class="py-3"><span class="issue-badge status-new">New</span></td>
-                                        <td class="py-3">
-                                            <button class="text-blue-500 mr-2"><i class="fas fa-eye"></i></button>
-                                            <button class="text-green-500"><i class="fas fa-edit"></i></button>
+                                        <td class="py-3 flex space-x-2">
+                                            <button class="btn btn-icon text-blue-500"><i class="fas fa-eye"></i></button>
+                                            <button class="btn btn-icon text-green-500"><i class="fas fa-edit"></i></button>
                                         </td>
                                     </tr>
                                     <tr class="border-t border-gray-100">
@@ -370,9 +501,9 @@
                                         <td class="py-3">Water Supply</td>
                                         <td class="py-3"><span class="issue-badge priority-high">High</span></td>
                                         <td class="py-3"><span class="issue-badge status-progress">In Progress</span></td>
-                                        <td class="py-3">
-                                            <button class="text-blue-500 mr-2"><i class="fas fa-eye"></i></button>
-                                            <button class="text-green-500"><i class="fas fa-edit"></i></button>
+                                        <td class="py-3 flex space-x-2">
+                                            <button class="btn btn-icon text-blue-500"><i class="fas fa-eye"></i></button>
+                                            <button class="btn btn-icon text-green-500"><i class="fas fa-edit"></i></button>
                                         </td>
                                     </tr>
                                     <tr class="border-t border-gray-100">
@@ -380,9 +511,9 @@
                                         <td class="py-3">Public Spaces</td>
                                         <td class="py-3"><span class="issue-badge priority-low">Low</span></td>
                                         <td class="py-3"><span class="issue-badge status-resolved">Resolved</span></td>
-                                        <td class="py-3">
-                                            <button class="text-blue-500 mr-2"><i class="fas fa-eye"></i></button>
-                                            <button class="text-green-500"><i class="fas fa-edit"></i></button>
+                                        <td class="py-3 flex space-x-2">
+                                            <button class="btn btn-icon text-blue-500"><i class="fas fa-eye"></i></button>
+                                            <button class="btn btn-icon text-green-500"><i class="fas fa-edit"></i></button>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -422,18 +553,38 @@
                                 <div class="bg-green-500 h-2 rounded-full" style="width: 78%"></div>
                             </div>
                         </div>
+
+                        <div class="mb-6">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm">Water Supply</span>
+                                <span class="text-sm font-semibold">88%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-green-500 h-2 rounded-full" style="width: 88%"></div>
+                            </div>
+                        </div>
+
+                        <div class="mb-6">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm">Public Spaces</span>
+                                <span class="text-sm font-semibold">95%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-green-500 h-2 rounded-full" style="width: 95%"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Department Management Section -->
-            <div id="department-management-section" class="p-5 hidden">
+            <div id="department-management-section" class="p-5 hidden section-transition">
                 <div class="card p-5">
                     <h3 class="font-semibold text-lg mb-5">Forward Issues to Authorities</h3>
                     <form id="forward-issue-form">
                         <div class="mb-4">
                             <label for="issue-select" class="block text-sm font-medium text-gray-700">Select Issue</label>
-                            <select id="issue-select" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50">
+                            <select id="issue-select" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 p-2">
                                 <option value="">Select an issue</option>
                                 <option value="1">Pothole on Main St</option>
                                 <option value="2">Broken Streetlight</option>
@@ -444,19 +595,20 @@
                         </div>
                         <div class="mb-4">
                             <label for="authority-select" class="block text-sm font-medium text-gray-700">Select Authorities</label>
-                            <select id="authority-select" multiple class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50">
+                            <select id="authority-select" multiple class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 p-2">
                                 <option value="sanitation">Sanitation Department</option>
                                 <option value="public-works">Public Works</option>
                                 <option value="electrical">Electrical Division</option>
                                 <option value="water-supply">Water Supply Department</option>
                                 <option value="public-spaces">Public Spaces Department</option>
                             </select>
+                            <p class="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple options</p>
                         </div>
                         <div class="mb-4">
                             <label for="notes" class="block text-sm font-medium text-gray-700">Additional Notes</label>
-                            <textarea id="notes" rows="4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50" placeholder="Add any additional notes here..."></textarea>
+                            <textarea id="notes" rows="4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 p-2" placeholder="Add any additional notes here..."></textarea>
                         </div>
-                        <button type="submit" class="btn btn-primary w-full flex items-center justify-center">
+                        <button type="submit" class="btn btn-primary w-full flex items-center justify-center py-2">
                             <i class="fas fa-paper-plane mr-2"></i>
                             Forward Issue
                         </button>
@@ -471,22 +623,36 @@
 
     <script>
         // Sidebar toggle for mobile
-        const sidebar = document.querySelector('.sidebar');
+        const sidebar = document.getElementById('sidebar');
         const mainContent = document.querySelector('.main-content');
-        const sidebarToggle = document.querySelector('#sidebar-toggle');
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const mobileOverlay = document.getElementById('mobile-overlay');
 
-        sidebarToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('collapsed');
-            mainContent.classList.toggle('expanded');
+        function toggleSidebar() {
+            sidebar.classList.toggle('mobile-open');
+            mobileOverlay.classList.toggle('active');
+            document.body.classList.toggle('overflow-hidden');
+        }
+
+        sidebarToggle.addEventListener('click', toggleSidebar);
+        mobileOverlay.addEventListener('click', toggleSidebar);
+
+        // Close sidebar when clicking on a nav item on mobile
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                if (window.innerWidth < 1024) {
+                    toggleSidebar();
+                }
+            });
         });
 
         // Navigation handling
-        const navItems = document.querySelectorAll('.nav-item');
         const sections = {
-            'dashboard': document.querySelector('#dashboard-section'),
-            'department-management': document.querySelector('#department-management-section')
+            'dashboard': document.getElementById('dashboard-section'),
+            'department-management': document.getElementById('department-management-section')
         };
-        const headerTitle = document.querySelector('#header-title');
+        const headerTitle = document.getElementById('header-title');
 
         navItems.forEach(item => {
             item.addEventListener('click', (e) => {
@@ -495,7 +661,10 @@
                 item.classList.add('active');
 
                 const section = item.getAttribute('data-section');
-                Object.values(sections).forEach(sec => sec.classList.add('hidden'));
+                Object.values(sections).forEach(sec => {
+                    if (sec) sec.classList.add('hidden');
+                });
+                
                 if (sections[section]) {
                     sections[section].classList.remove('hidden');
                     headerTitle.textContent = item.querySelector('.sidebar-text').textContent;
@@ -504,14 +673,14 @@
         });
 
         // Form submission for forwarding issues
-        const forwardForm = document.querySelector('#forward-issue-form');
-        const successMessage = document.querySelector('#forward-success');
+        const forwardForm = document.getElementById('forward-issue-form');
+        const successMessage = document.getElementById('forward-success');
 
         forwardForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const issue = document.querySelector('#issue-select').value;
-            const authorities = Array.from(document.querySelector('#authority-select').selectedOptions).map(opt => opt.value);
-            const notes = document.querySelector('#notes').value;
+            const issue = document.getElementById('issue-select').value;
+            const authorities = Array.from(document.getElementById('authority-select').selectedOptions).map(opt => opt.value);
+            const notes = document.getElementById('notes').value;
 
             if (issue && authorities.length > 0) {
                 // Simulate forwarding (replace with actual API call in production)
@@ -524,7 +693,7 @@
             }
         });
 
-        // Chart.js setup (unchanged)
+        // Chart.js setup
         const categoryChart = new Chart(document.getElementById('categoryChart'), {
             type: 'bar',
             data: {
@@ -537,6 +706,8 @@
                 }]
             },
             options: {
+                responsive: true,
+                maintainAspectRatio: false,
                 scales: {
                     y: {
                         beginAtZero: true
@@ -564,12 +735,20 @@
                 }]
             },
             options: {
+                responsive: true,
+                maintainAspectRatio: false,
                 scales: {
                     y: {
                         beginAtZero: true
                     }
                 }
             }
+        });
+
+        // Handle window resize for chart responsiveness
+        window.addEventListener('resize', function() {
+            categoryChart.resize();
+            timelineChart.resize();
         });
     </script>
 </body>
